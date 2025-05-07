@@ -2,22 +2,19 @@
 
 ![DeepWiki Banner](screenshots/Deepwiki.png)
 
-**DeepWiki** is my own implementation attempt of DeepWiki, automatically creates beautiful, interactive wikis for any GitHub, GitLab, or BitBucket repository! Just enter a repo name, and DeepWiki will:
+Added local repository support for [**DeepWiki**](https://github.com/AsyncFuncAI/deepwiki-open) 
 
+Just enter a repo name, and DeepWiki will:
 1. Analyze the code structure
 2. Generate comprehensive documentation
 3. Create visual diagrams to explain how everything works
 4. Organize it all into an easy-to-navigate wiki
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/sheing)
-
-[![Twitter/X](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://x.com/sashimikun_void)
-[![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.com/invite/VQMBGR8u5v)
-
 ## ✨ Features
 
 - **Instant Documentation**: Turn any GitHub, GitLab or BitBucket repo into a wiki in seconds
 - **Private Repository Support**: Securely access private repositories with personal access tokens
+- **Local Repository Support**: Securely access private local repositories( make sure that .git folder is initialized in the folder
 - **Smart Analysis**: AI-powered understanding of code structure and relationships
 - **Beautiful Diagrams**: Automatic Mermaid diagrams to visualize architecture and data flow
 - **Easy Navigation**: Simple, intuitive interface to explore the wiki
@@ -59,6 +56,7 @@ GOOGLE_API_KEY=your_google_api_key
 OPENAI_API_KEY=your_openai_api_key
 # Optional: Add this if you want to use OpenRouter models
 OPENROUTER_API_KEY=your_openrouter_api_key
+# Optional: Add this if you want to run ollama locally, without accessing internet
 ```
 
 #### Step 2: Start the Backend
@@ -89,8 +87,10 @@ yarn dev
 
 1. Open [http://localhost:3000](http://localhost:3000) in your browser
 2. Enter a GitHub, GitLab, or Bitbucket repository (like `https://github.com/openai/codex`, `https://github.com/microsoft/autogen`, `https://gitlab.com/gitlab-org/gitlab`, or `https://bitbucket.org/redradish/atlassian_app_versions`)
-3. For private repositories, click "+ Add access tokens" and enter your GitHub or GitLab personal access token
-4. Click "Generate Wiki" and watch the magic happen!
+3. or Enter your local directory/browse + select folder
+4. Make sure to tick ollama box for indexing it using local resources
+5. For private repositories, click "+ Add access tokens" and enter your GitHub or GitLab personal access token
+6. Click "Generate Wiki" and watch the magic happen!
 
 ## 🔍 How It Works
 

@@ -87,15 +87,18 @@ async def chat_completions_stream(request: ChatCompletionRequest):
 
             # Determine which access token to use based on the repository URL
             access_token = None
-            if "github.com" in request.repo_url and request.github_token:
-                access_token = request.github_token
-                logger.info("Using GitHub token for authentication")
-            elif "gitlab.com" in request.repo_url and request.gitlab_token:
-                access_token = request.gitlab_token
-                logger.info("Using GitLab token for authentication")
-            elif "bitbucket.org" in request.repo_url and request.bitbucket_token:
-                access_token = request.bitbucket_token
-                logger.info("Using Bitbucket token for authentication")
+            if request.repo_url.startswith('http'):
+                if "github.com" in request.repo_url and request.github_token:
+                    access_token = request.github_token
+                    logger.info("Using GitHub token for authentication")
+                elif "gitlab.com" in request.repo_url and request.gitlab_token:
+                    access_token = request.gitlab_token
+                    logger.info("Using GitLab token for authentication")
+                elif "bitbucket.org" in request.repo_url and request.bitbucket_token:
+                    access_token = request.bitbucket_token
+                    logger.info("Using Bitbucket token for authentication")
+            else:
+                logger.info("Processing local repository path")
 
             request_rag.prepare_retriever(request.repo_url, access_token, request.local_ollama)
             logger.info(f"Retriever prepared for {request.repo_url}")
@@ -196,11 +199,15 @@ async def chat_completions_stream(request: ChatCompletionRequest):
         repo_name = repo_url.split("/")[-1] if "/" in repo_url else repo_url
 
         # Determine repository type
-        repo_type = "GitHub"
-        if "gitlab.com" in repo_url:
-            repo_type = "GitLab"
-        elif "bitbucket.org" in repo_url:
-            repo_type = "Bitbucket"
+        if repo_url.startswith('http'):
+            if "gitlab.com" in repo_url:
+                repo_type = "GitLab"
+            elif "bitbucket.org" in repo_url:
+                repo_type = "Bitbucket"
+            else:
+                repo_type = "GitHub"
+        else:
+            repo_type = "Local"
 
         # Get language information
         language_code = request.language or "en"

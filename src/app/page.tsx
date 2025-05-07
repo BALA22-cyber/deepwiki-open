@@ -1,6 +1,10 @@
 'use client';
 
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
+=======
+import React, { useState, useRef, ChangeEvent } from 'react';
+>>>>>>> 5f053e6 ( added local repository browsing and indexing support, to frontend)
 import { useRouter } from 'next/navigation';
 import { FaWikipediaW, FaGithub, FaGitlab, FaBitbucket, FaCoffee, FaTwitter } from 'react-icons/fa';
 import ThemeToggle from '@/components/theme-toggle';
@@ -36,6 +40,19 @@ const DEMO_SEQUENCE_CHART = `sequenceDiagram
 
   %% Add a note to make text more visible
   Note over User,GitHub: DeepWiki supports sequence diagrams for visualizing interactions`;
+
+// Add custom type for file input element
+interface HTMLInputEvent extends Event {
+  target: HTMLInputElement & {
+    files: FileList;
+  };
+}
+
+// Extend HTMLInputElement to include webkitdirectory
+interface CustomFileInput extends HTMLInputElement {
+  webkitdirectory: boolean;
+  directory: string;
+}
 
 export default function Home() {
   const router = useRouter();
@@ -78,16 +95,33 @@ export default function Home() {
   const [accessToken, setAccessToken] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+<<<<<<< HEAD
   const [selectedLanguage, setSelectedLanguage] = useState<string>(language);
 
   // Sync the language context with the selectedLanguage state
   useEffect(() => {
     setLanguage(selectedLanguage);
   }, [selectedLanguage, setLanguage]);
+=======
+  const [isLocalRepo, setIsLocalRepo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+>>>>>>> 5f053e6 ( added local repository browsing and indexing support, to frontend)
 
   // Parse repository URL/input and extract owner and repo
   const parseRepositoryInput = (input: string): { owner: string, repo: string, type: string, fullPath?: string } | null => {
     input = input.trim();
+
+    // Handle local repository path
+    if (isLocalRepo) {
+      const parts = input.split('/');
+      const repo = parts[parts.length - 1];
+      return {
+        owner: 'local',
+        repo: repo,
+        type: 'local',
+        fullPath: input
+      };
+    }
 
     let owner = '', repo = '', type = 'github', fullPath;
 
@@ -158,43 +192,49 @@ export default function Home() {
     const parsedRepo = parseRepositoryInput(repositoryInput);
 
     if (!parsedRepo) {
-      setError('Invalid repository format. Use "owner/repo", "https://github.com/owner/repo", "https://gitlab.com/owner/repo", or "https://bitbucket.org/owner/repo" format.');
+      setError('Invalid repository format. Please provide a valid repository path or URL.');
       setIsSubmitting(false);
       return;
     }
 
-    const { owner, repo, type } = parsedRepo;
+    const { owner, repo, type, fullPath } = parsedRepo;
 
-    // Store tokens in query params if they exist
+    // Build query parameters
     const params = new URLSearchParams();
-    if (accessToken) {
-      if (selectedPlatform === 'github') {
+    
+    // Add tokens if provided
+    if (showTokenInputs && accessToken) {
+      if (type === 'github') {
         params.append('github_token', accessToken);
-      } else if (selectedPlatform === 'gitlab') {
+      } else if (type === 'gitlab') {
         params.append('gitlab_token', accessToken);
-      } else if (selectedPlatform === 'bitbucket') {
+      } else if (type === 'bitbucket') {
         params.append('bitbucket_token', accessToken);
       }
     }
-    if (type !== 'github') {
-      params.append('type', type);
+
+    // Add other parameters
+    params.append('type', type);
+    if (localOllama) {
+      params.append('local_ollama', 'true');
     }
-    // Add model parameters
-    params.append('local_ollama', localOllama.toString());
-    params.append('use_openrouter', useOpenRouter.toString());
     if (useOpenRouter) {
+      params.append('use_openrouter', 'true');
       params.append('openrouter_model', openRouterModel);
     }
 
+<<<<<<< HEAD
     // Add language parameter
     params.append('language', selectedLanguage);
 
     const queryString = params.toString() ? `?${params.toString()}` : '';
+=======
+    // For local repositories, use the full path
+    const repoPath = type === 'local' ? fullPath : `${owner}/${repo}`;
+>>>>>>> 5f053e6 ( added local repository browsing and indexing support, to frontend)
 
-    // Navigate to the dynamic route
-    router.push(`/${owner}/${repo}${queryString}`);
-
-    // The isSubmitting state will be reset when the component unmounts during navigation
+    // Navigate to the repository page
+    router.push(`/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}?${params.toString()}`);
   };
 
   return (
@@ -211,6 +251,7 @@ export default function Home() {
             </div>
           </div>
 
+<<<<<<< HEAD
           <form onSubmit={handleFormSubmit} className="flex flex-col gap-3 w-full max-w-3xl">
             {/* Repository URL input and submit button */}
             <div className="flex flex-col sm:flex-row gap-2">
@@ -227,12 +268,111 @@ export default function Home() {
                     {error}
                   </div>
                 )}
+=======
+          <form onSubmit={handleFormSubmit} className="flex flex-col gap-2">
+            <div className="flex items-center justify-between mb-4">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Repository Source
+              </label>
+              <div className="relative inline-flex">
+                <button
+                  type="button"
+                  onClick={() => setIsLocalRepo(false)}
+                  className={`px-4 py-2 text-sm font-medium rounded-l-md ${
+                    !isLocalRepo
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  Remote
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsLocalRepo(true)}
+                  className={`px-4 py-2 text-sm font-medium rounded-r-md ${
+                    isLocalRepo
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  Local
+                </button>
+>>>>>>> 5f053e6 ( added local repository browsing and indexing support, to frontend)
               </div>
+            </div>
+
+            {isLocalRepo ? (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Local Repository Path
+                </label>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={repositoryInput}
+                    onChange={(e) => setRepositoryInput(e.target.value)}
+                    placeholder="Enter local repository path"
+                    className="flex-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    style={{ display: 'none' }}
+                    // @ts-ignore
+                    webkitdirectory="true"
+                    // @ts-ignore
+                    directory=""
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        // Get the directory path from the first file
+                        const relPath = e.target.files[0].webkitRelativePath;
+                        const dirName = relPath.split('/')[0];
+                        setRepositoryInput(dirName);
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    Browse
+                  </button>
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  The Browse function only works for local development (when the backend can access your filesystem).
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Repository URL
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={repositoryInput}
+                    onChange={(e) => setRepositoryInput(e.target.value)}
+                    placeholder="Enter repository URL or owner/repo"
+                    className="flex-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowTokenInputs(!showTokenInputs)}
+                    className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    {showTokenInputs ? 'Hide Token' : 'Add Token'}
+                  </button>
+                </div>
+              </div>
+            )}
+            <div className="flex justify-end mt-4">
               <button
                 type="submit"
                 className="btn-japanese px-6 py-2.5 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isSubmitting}
               >
+<<<<<<< HEAD
                 {isSubmitting ? t('common.processing') : t('common.generateWiki')}
               </button>
             </div>
@@ -243,6 +383,28 @@ export default function Home() {
               <div className="min-w-[140px]">
                 <label htmlFor="language-select" className="block text-xs font-medium text-[var(--foreground)] mb-1.5">
                   {t('form.wikiLanguage')}
+=======
+                {isSubmitting ? 'Processing...' : 'Confirm'}
+              </button>
+            </div>
+
+            <div className="flex flex-col w-full space-y-2">
+              <div className="flex items-center">
+                <input
+                  id="local-ollama"
+                  type="checkbox"
+                  checked={localOllama}
+                  onChange={(e) => {
+                    setLocalOllama(e.target.checked);
+                    if (e.target.checked) {
+                      setUseOpenRouter(false);
+                    }
+                  }}
+                  className="h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                />
+                <label htmlFor="local-ollama" className="ml-2 text-xs text-gray-700 dark:text-gray-300">
+                  Local Ollama Model (Experimental)
+>>>>>>> 5f053e6 ( added local repository browsing and indexing support, to frontend)
                 </label>
                 <select
                   id="language-select"

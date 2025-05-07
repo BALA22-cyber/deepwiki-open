@@ -74,6 +74,9 @@ const wikiStyles = `
 
 // Helper functions for token handling and API requests
 const getRepoUrl = (owner: string, repo: string, repoType: string): string => {
+  if (repoType === 'local') {
+    return `${owner}/${repo}`;
+  }
   return repoType === 'github'
     ? `https://github.com/${owner}/${repo}`
     : repoType === 'gitlab'
@@ -703,7 +706,12 @@ IMPORTANT:
       let fileTreeData = '';
       let readmeContent = '';
 
-      if (repoInfo.type === 'github') {
+      if (repoInfo.type === 'local') {
+        // For local repositories, we'll let the backend handle the file tree
+        // and README content retrieval
+        fileTreeData = '';
+        readmeContent = '';
+      } else if (repoInfo.type === 'github') {
         // GitHub API approach
         // Try to get the tree data for common branch names
         let treeData = null;
